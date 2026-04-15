@@ -27,3 +27,15 @@ target_compile_definitions(parser_test PRIVATE
 
 include(GoogleTest)
 gtest_discover_tests(parser_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_executable(
+kmer_utils_test
+kmer_utils_test.cpp
+)
+
+target_link_libraries(
+kmer_utils_test
+GTest::gtest_main
+)
+
+gtest_discover_tests(kmer_utils_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
