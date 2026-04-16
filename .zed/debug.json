@@ -1,0 +1,12 @@
+[
+  {
+    "label": "Debug Testing FAISS Main Executable",
+    "build": {
+      "command": "cmake --build build",
+      "cwd": "$ZED_WORKTREE_ROOT",
+    },
+    "program": "${ZED_WORKTREE_ROOT}/build/testing_faiss",
+    "request": "launch",
+    "adapter": "CodeLLDB",
+  },
+]
