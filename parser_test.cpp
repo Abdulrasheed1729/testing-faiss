@@ -7,7 +7,10 @@
 
 static const std::string DATA_DIR = TEST_DATA_DIR;
 
-TEST(FastqParserTest, ValidFastqFile) {
+using namespace parser;
+
+TEST(FastqParserTest, ValidFastqFile)
+{
     FastqParser parser(DATA_DIR + "/test.fq");
 
     ASSERT_TRUE(parser.hasNext());
@@ -15,13 +18,16 @@ TEST(FastqParserTest, ValidFastqFile) {
     FastqRecord record = parser.next();
 
     ASSERT_EQ(record.header, "simulated.1/1");
-    ASSERT_EQ(record.sequence, "ACGAGTTGCTGATCGAATTCCACACACACCCTCCTCCCATGCCTTCCCAATGGCTGCTGATAGTCTCTTTGGGGAATCAGCTTGAAATTTGTATTGCTCT");
-    ASSERT_EQ(record.quality, "IHIIIIHIIIGHHHGHIHHHIEIHIFIIIIHGIIDEIGIIHIIHGIIIFIHF=FI<HHHIGIF?GAIIIIBIEIIHEIIHIIFIIBBIIII;I3IIHIIF");
+    ASSERT_EQ(record.sequence,
+              "ACGAGTTGCTGATCGAATTCCACACACACCCTCCTCCCATGCCTTCCCAATGGCTGCTGATAGTCTCTTTGGGGAATCAGCTTGAAATTTGTATTGCTCT");
+    ASSERT_EQ(record.quality,
+              "IHIIIIHIIIGHHHGHIHHHIEIHIFIIIIHGIIDEIGIIHIIHGIIIFIHF=FI<HHHIGIF?GAIIIIBIEIIHEIIHIIFIIBBIIII;I3IIHIIF");
 
     ASSERT_FALSE(parser.hasNext());
 }
 
-TEST(FastqParserTest, MultipleRecords) {
+TEST(FastqParserTest, MultipleRecords)
+{
     FastqParser parser(DATA_DIR + "/test_multi.fq");
 
     ASSERT_TRUE(parser.hasNext());
@@ -39,16 +45,19 @@ TEST(FastqParserTest, MultipleRecords) {
     ASSERT_FALSE(parser.hasNext());
 }
 
-TEST(FastqParserTest, EmptyFile) {
+TEST(FastqParserTest, EmptyFile)
+{
     FastqParser parser(DATA_DIR + "/test_empty.fq");
     ASSERT_FALSE(parser.hasNext());
 }
 
-TEST(FastqParserTest, FileNotFound) {
+TEST(FastqParserTest, FileNotFound)
+{
     ASSERT_THROW(FastqParser(DATA_DIR + "/nonexistent.fq"), std::runtime_error);
 }
 
-TEST(FastqParserTest, HasNextIsIdempotent) {
+TEST(FastqParserTest, HasNextIsIdempotent)
+{
     FastqParser parser(DATA_DIR + "/test.fq");
 
     // Calling hasNext() repeatedly must not consume any record
@@ -62,26 +71,31 @@ TEST(FastqParserTest, HasNextIsIdempotent) {
     ASSERT_FALSE(parser.hasNext());
 }
 
-TEST(FastqParserTest, InvalidHeader) {
+TEST(FastqParserTest, InvalidHeader)
+{
     FastqParser parser(DATA_DIR + "/test_invalid_header.fq");
     ASSERT_THROW(parser.next(), std::runtime_error);
 }
 
-TEST(FastqParserTest, InvalidSeparator) {
+TEST(FastqParserTest, InvalidSeparator)
+{
     FastqParser parser(DATA_DIR + "/test_invalid_separator.fq");
     ASSERT_THROW(parser.next(), std::runtime_error);
 }
 
-TEST(FastqParserTest, QualityLengthMismatch) {
+TEST(FastqParserTest, QualityLengthMismatch)
+{
     FastqParser parser(DATA_DIR + "/test_quality_mismatch.fq");
     ASSERT_THROW(parser.next(), std::runtime_error);
 }
 
-TEST(FastqParserTest, LargeFile) {
+TEST(FastqParserTest, LargeFile)
+{
     FastqParser parser(DATA_DIR + "/left.fq");
 
     std::size_t count = 0;
-    while (parser.hasNext()) {
+    while (parser.hasNext())
+    {
         FastqRecord record = parser.next();
         ASSERT_FALSE(record.header.empty());
         ASSERT_EQ(record.sequence.length(), record.quality.length());
