@@ -70,10 +70,15 @@ namespace parser
     public:
         explicit FastqParser(const std::string& filename) : filename(filename), file(filename)
         {
-            if (!file.is_open())
-            {
-                throw std::runtime_error("Failed to open file: " + filename);
-            }
+            // if (!file.is_open())
+            // {
+            //     throw std::runtime_error("Failed to open file: " + filename);
+            // }
+        }
+
+        ~FastqParser()
+        {
+            file.close();
         }
 
         bool hasNext() { return file.peek() != EOF; }

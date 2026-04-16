@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 
-inline int base_to_bits(const char base)
+inline int base_to_bits(const char& base)
 {
     switch (base)
     {
@@ -9,19 +9,19 @@ inline int base_to_bits(const char base)
         return 0;
     case 'C':
         return 1;
-    case 'G':
-        return 2;
     case 'T':
+        return 2;
+    case 'G':
         return 3;
     default:
-        return -1;
+        return 0;
     }
 }
 
 std::vector<bool> kmer_one_hot(const std::string& kmer, int k = 5)
 {
     const int total = 1 << (2 * k);
-    std::vector result(total, false);
+    std::vector<bool> result(total, false);
 
     if (kmer.size() < k)
     {
