@@ -3,3 +3,5 @@ cmake-build-debug/
 build/
 .cache/
 *.bin
+*_test_discovery_*
+CTestTestfile.cmake
