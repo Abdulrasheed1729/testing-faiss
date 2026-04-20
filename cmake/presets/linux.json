@@ -4,14 +4,23 @@
     {
       "name": "linux",
       "displayName": "Linux (Ninja + vcpkg)",
-      "inherits": "base",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/linux",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Linux"
       }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "linux",
+      "displayName": "Linux Build",
+      "configurePreset": "linux"
     }
   ]
 }
