@@ -1,4 +1,4 @@
-#include "parser.cpp"
+#include "scanner.cpp"
 #include <gtest/gtest.h>
 
 #ifndef TEST_DATA_DIR
@@ -7,11 +7,11 @@
 
 static const std::string DATA_DIR = TEST_DATA_DIR;
 
-using namespace parser;
+using namespace scanner;
 
 TEST(FastqParserTest, ValidFastqFile)
 {
-    FastqParser parser(DATA_DIR + "/test.fq");
+    FastqScanner parser(DATA_DIR + "/test.fq");
 
     ASSERT_TRUE(parser.hasNext());
 
@@ -28,7 +28,7 @@ TEST(FastqParserTest, ValidFastqFile)
 
 TEST(FastqParserTest, MultipleRecords)
 {
-    FastqParser parser(DATA_DIR + "/test_multi.fq");
+    FastqScanner parser(DATA_DIR + "/test_multi.fq");
 
     ASSERT_TRUE(parser.hasNext());
     FastqRecord first = parser.next();
@@ -47,18 +47,18 @@ TEST(FastqParserTest, MultipleRecords)
 
 TEST(FastqParserTest, EmptyFile)
 {
-    FastqParser parser(DATA_DIR + "/test_empty.fq");
+    FastqScanner parser(DATA_DIR + "/test_empty.fq");
     ASSERT_FALSE(parser.hasNext());
 }
 
 TEST(FastqParserTest, FileNotFound)
 {
-    ASSERT_THROW(FastqParser(DATA_DIR + "/nonexistent.fq"), std::runtime_error);
+    ASSERT_THROW(FastqScanner(DATA_DIR + "/nonexistent.fq"), std::runtime_error);
 }
 
 TEST(FastqParserTest, HasNextIsIdempotent)
 {
-    FastqParser parser(DATA_DIR + "/test.fq");
+    FastqScanner parser(DATA_DIR + "/test.fq");
 
     // Calling hasNext() repeatedly must not consume any record
     ASSERT_TRUE(parser.hasNext());
@@ -73,25 +73,25 @@ TEST(FastqParserTest, HasNextIsIdempotent)
 
 TEST(FastqParserTest, InvalidHeader)
 {
-    FastqParser parser(DATA_DIR + "/test_invalid_header.fq");
+    FastqScanner parser(DATA_DIR + "/test_invalid_header.fq");
     ASSERT_THROW(parser.next(), std::runtime_error);
 }
 
 TEST(FastqParserTest, InvalidSeparator)
 {
-    FastqParser parser(DATA_DIR + "/test_invalid_separator.fq");
+    FastqScanner parser(DATA_DIR + "/test_invalid_separator.fq");
     ASSERT_THROW(parser.next(), std::runtime_error);
 }
 
 TEST(FastqParserTest, QualityLengthMismatch)
 {
-    FastqParser parser(DATA_DIR + "/test_quality_mismatch.fq");
+    FastqScanner parser(DATA_DIR + "/test_quality_mismatch.fq");
     ASSERT_THROW(parser.next(), std::runtime_error);
 }
 
 TEST(FastqParserTest, LargeFile)
 {
-    FastqParser parser(DATA_DIR + "/left.fq");
+    FastqScanner parser(DATA_DIR + "/left.fq");
 
     std::size_t count = 0;
     while (parser.hasNext())

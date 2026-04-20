@@ -10,7 +10,7 @@
 #include <iterator>
 #include <sstream>
 
-#include "parser.cpp"
+#include "scanner.cpp"
 #include "kmer_utils.cpp"
 
 // #include <faiss/IndexFlat.h>
@@ -36,12 +36,12 @@ std::string vec_to_string(const std::vector<T>& vec)
 
 int main()
 {
-    parser::FastqParser fqparser("data/left.fq");
+    scanner::FastqScanner fqscanner("data/left.fq");
     std::ofstream outfile("data/left.kmer.bin", std::ios::binary);
 
-    while (fqparser.hasNext())
+    while (fqscanner.hasNext())
     {
-        parser::FastqRecord record = fqparser.next();
+        scanner::FastqRecord record = fqscanner.next();
         std::vector<bool> kmer_vec = kmer_one_hot(record.sequence);
         std::string kmer_str = vec_to_string(kmer_vec);
         std::cout << kmer_str << std::endl;

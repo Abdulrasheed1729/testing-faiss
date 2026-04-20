@@ -2,7 +2,7 @@
 #include <iostream>
 #include <utility>
 
-namespace parser
+namespace scanner
 {
     struct FastaRecord
     {
@@ -17,13 +17,13 @@ namespace parser
         std::string quality;
     };
 
-    class FastaParser
+    class FastaScanner
     {
     private:
         std::string filename;
 
     public:
-        explicit FastaParser(std::string filename) : filename(std::move(filename))
+        explicit FastaScanner(std::string filename) : filename(std::move(filename))
         {
         }
 
@@ -61,14 +61,14 @@ namespace parser
         }
     };
 
-    class FastqParser
+    class FastqScanner
     {
     private:
         std::string filename;
         std::ifstream file;
 
     public:
-        explicit FastqParser(const std::string& filename) : filename(filename), file(filename)
+        explicit FastqScanner(const std::string& filename) : filename(filename), file(filename)
         {
             // if (!file.is_open())
             // {
@@ -76,7 +76,7 @@ namespace parser
             // }
         }
 
-        ~FastqParser()
+        ~FastqScanner()
         {
             file.close();
         }
@@ -128,4 +128,4 @@ namespace parser
             return record;
         }
     };
-} // Namespace parser
+} // Namespace scanner
