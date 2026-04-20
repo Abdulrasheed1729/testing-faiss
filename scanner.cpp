@@ -1,3 +1,4 @@
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <utility>
@@ -40,6 +41,8 @@ namespace scanner
             if (file.is_open())
             {
                 std::string line;
+                std::string sequence;
+
                 while (std::getline(file, line))
                 {
                     if (line[0] == '>')
@@ -48,11 +51,15 @@ namespace scanner
                     }
                     else
                     {
-                        record.sequence += line;
-                    }
-                    if (line[0] == '>')
+                        for (char c: line)
                     {
-                        break;
+                        if(!std::isspace(static_cast<unsigned char>(c)))
+                        {
+                           sequence.push_back(c);
+                        }
+                    }
+                        record.sequence = sequence;
+
                     }
                 }
             }
@@ -70,10 +77,10 @@ namespace scanner
     public:
         explicit FastqScanner(const std::string& filename) : filename(filename), file(filename)
         {
-            // if (!file.is_open())
-            // {
-            //     throw std::runtime_error("Failed to open file: " + filename);
-            // }
+            if (!file.is_open())
+            {
+                throw std::runtime_error("Failed to open file: " + filename);
+            }
         }
 
         ~FastqScanner()
