@@ -1,0 +1,17 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "windows",
+      "displayName": "Windows (Visual Studio 18 2026 + vcpkg)",
+      "inherits": "base",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build/windows",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ]
+}

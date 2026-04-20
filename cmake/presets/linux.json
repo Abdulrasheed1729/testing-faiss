@@ -1,0 +1,17 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "linux",
+      "displayName": "Linux (Ninja + vcpkg)",
+      "inherits": "base",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/linux",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ]
+}
