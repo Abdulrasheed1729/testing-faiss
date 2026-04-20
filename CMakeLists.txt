@@ -14,21 +14,21 @@ target_link_libraries(testing_faiss PRIVATE faiss)
 enable_testing()
 
 add_executable(
-parser_test
-parser_test.cpp
+scanner_test
+scanner_test.cpp
 )
 
 target_link_libraries(
-parser_test
+scanner_test
 GTest::gtest_main
 )
 
-target_compile_definitions(parser_test PRIVATE
+target_compile_definitions(scanner_test PRIVATE
     TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/data"
 )
 
 include(GoogleTest)
-gtest_discover_tests(parser_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+gtest_discover_tests(scanner_test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_executable(
 kmer_utils_test
