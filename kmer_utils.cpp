@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <stdexcept>
 #include <string>
@@ -123,4 +125,31 @@ std::vector<uint8_t> kmer_one_hot(const std::string& sequence)
         throw std::invalid_argument("Invalid base in sequence");
 
     return result;
+}
+
+
+std::vector<uint8_t> pack_kmer_one_hot(const std::vector<uint8_t>& vec )
+{
+    const size_t num_bits = vec.size();
+    const size_t byte_size = vec.size() >> 3;
+    std::vector<uint8_t> packed(byte_size, 0);
+
+    for (size_t byte_idx = 0; byte_idx < byte_size; ++byte_idx)
+    {
+        uint8_t current_byte = 0;
+        const size_t start_bit = byte_idx * 8;
+        const size_t limit = std::min(start_bit + 8, num_bits);
+
+        for (size_t i = start_bit; i < limit; ++i)
+        {
+            if(vec[i])
+            {
+                current_byte |= static_cast<std::uint8_t>(1u << (7 - (i - start_bit)));
+            }
+        }
+
+       packed[byte_idx]  = current_byte;
+    }
+
+    return packed;
 }

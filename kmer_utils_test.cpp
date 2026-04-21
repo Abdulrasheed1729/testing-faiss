@@ -191,3 +191,110 @@ TEST(KmerOneHotTest, InvalidBaseThrows)
     EXPECT_THROW(kmer_one_hot<5>("ACGNA"), std::invalid_argument);
     EXPECT_THROW(kmer_one_hot<3>("NNN"),   std::invalid_argument);
 }
+
+// ── pack_kmer_one_hot ─────────────────────────────────────────────────────────
+
+TEST(PackKmerOneHotTest, OutputSizeIsInputDividedByEight)
+{
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(8,   0)).size(), 1u);
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(16,  0)).size(), 2u);
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(1024,0)).size(), 128u);
+}
+
+TEST(PackKmerOneHotTest, EmptyInputProducesEmptyOutput)
+{
+    EXPECT_TRUE(pack_kmer_one_hot({}).empty());
+}
+
+TEST(PackKmerOneHotTest, InputSmallerThanEightProducesEmptyOutput)
+{
+    // 7 bits → 7>>3 = 0 bytes
+    EXPECT_TRUE(pack_kmer_one_hot(std::vector<uint8_t>(7, 1)).empty());
+}
+
+TEST(PackKmerOneHotTest, TrailingBitsIgnored)
+{
+    // 9 elements → only first 8 packed, 9th dropped
+    std::vector<uint8_t> v(9, 0);
+    v[8] = 1; // only the trailing bit is set
+    auto packed = pack_kmer_one_hot(v);
+    ASSERT_EQ(packed.size(), 1u);
+    EXPECT_EQ(packed[0], 0u); // trailing bit was not packed
+}
+
+TEST(PackKmerOneHotTest, MSBFirst_FirstBitSet)
+{
+    // bit 0 → most significant bit of byte 0
+    std::vector<uint8_t> v(8, 0);
+    v[0] = 1;
+    EXPECT_EQ(pack_kmer_one_hot(v)[0], 0b10000000u); // 128
+}
+
+TEST(PackKmerOneHotTest, MSBFirst_LastBitSet)
+{
+    // bit 7 → least significant bit of byte 0
+    std::vector<uint8_t> v(8, 0);
+    v[7] = 1;
+    EXPECT_EQ(pack_kmer_one_hot(v)[0], 0b00000001u); // 1
+}
+
+TEST(PackKmerOneHotTest, AllBitsSet)
+{
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(8, 1))[0], 0xFFu);
+}
+
+TEST(PackKmerOneHotTest, NoBitsSet)
+{
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(8, 0))[0], 0u);
+}
+
+TEST(PackKmerOneHotTest, AlternatingBits)
+{
+    // [1,0,1,0,1,0,1,0] → 0b10101010 = 170
+    std::vector<uint8_t> v = {1,0,1,0,1,0,1,0};
+    EXPECT_EQ(pack_kmer_one_hot(v)[0], 0b10101010u);
+}
+
+TEST(PackKmerOneHotTest, NonZeroValuesTreatedAsSet)
+{
+    // values 5 and 255 are both non-zero → bits 0 and 1 set → 0b11000000 = 192
+    std::vector<uint8_t> v = {5, 255, 0, 0, 0, 0, 0, 0};
+    EXPECT_EQ(pack_kmer_one_hot(v)[0], 0b11000000u);
+}
+
+TEST(PackKmerOneHotTest, MultiByteKnownValues)
+{
+    // byte 0: [1,0,0,0,0,0,0,0] → 128
+    // byte 1: [0,0,0,0,0,0,0,1] → 1
+    std::vector<uint8_t> v(16, 0);
+    v[0]  = 1;
+    v[15] = 1;
+    auto packed = pack_kmer_one_hot(v);
+    ASSERT_EQ(packed.size(), 2u);
+    EXPECT_EQ(packed[0], 128u);
+    EXPECT_EQ(packed[1], 1u);
+}
+
+TEST(PackKmerOneHotTest, IntegrationWithKmerOneHot_AAAAA)
+{
+    // kmer_one_hot<5>("AAAAA") sets only index 0
+    // → byte 0 has bit 0 (MSB) set = 128, all other bytes = 0
+    auto vec    = kmer_one_hot<5>("AAAAA");
+    auto packed = pack_kmer_one_hot(vec);
+    ASSERT_EQ(packed.size(), 128u);
+    EXPECT_EQ(packed[0], 128u);
+    for (size_t i = 1; i < packed.size(); ++i)
+        EXPECT_EQ(packed[i], 0u) << "byte " << i << " should be 0";
+}
+
+TEST(PackKmerOneHotTest, IntegrationWithKmerOneHot_GGGGG)
+{
+    // kmer_one_hot<5>("GGGGG") sets only index 1023
+    // byte_idx = 1023/8 = 127, bit pos = 7 → shift 0 → packed[127] = 1
+    auto vec    = kmer_one_hot<5>("GGGGG");
+    auto packed = pack_kmer_one_hot(vec);
+    ASSERT_EQ(packed.size(), 128u);
+    for (size_t i = 0; i < 127; ++i)
+        EXPECT_EQ(packed[i], 0u) << "byte " << i << " should be 0";
+    EXPECT_EQ(packed[127], 1u);
+}
