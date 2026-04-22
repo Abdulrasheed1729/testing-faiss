@@ -40,8 +40,6 @@ namespace scanner
                 throw std::runtime_error("Failed to open file");
             }
 
-            if (file.is_open())
-            {
                 std::string line;
                 std::string sequence;
 
