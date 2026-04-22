@@ -1,3 +1,5 @@
+#pragma once
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -10,7 +12,7 @@
 template <size_t KMER>
 static constexpr size_t kmer_vector_size()
 {
-    return (1u << (2u * KMER));
+    return (size_t(1) << (2u * KMER));
 }
 
 // Branchless lookup table — faster than switch, GPU-friendly (no branches)
@@ -128,10 +130,10 @@ std::vector<uint8_t> kmer_one_hot(const std::string& sequence)
 }
 
 
-std::vector<uint8_t> pack_kmer_one_hot(const std::vector<uint8_t>& vec )
+inline std::vector<uint8_t> pack_kmer_one_hot(const std::vector<uint8_t>& vec )
 {
     const size_t num_bits = vec.size();
-    const size_t byte_size = vec.size() >> 3;
+    const size_t byte_size = (vec.size() + 7) >> 3;
     std::vector<uint8_t> packed(byte_size, 0);
 
     for (size_t byte_idx = 0; byte_idx < byte_size; ++byte_idx)
@@ -153,3 +155,6 @@ std::vector<uint8_t> pack_kmer_one_hot(const std::vector<uint8_t>& vec )
 
     return packed;
 }
+
+
+// TODO(Abdulrasheed1729): add the suport for complement type

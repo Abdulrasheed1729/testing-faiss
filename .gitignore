@@ -5,3 +5,4 @@ build/
 *.bin
 *_test_discovery_*
 CTestTestfile.cmake
+*.index

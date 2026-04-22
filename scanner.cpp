@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cctype>
 #include <fstream>
 #include <iostream>
@@ -24,7 +26,7 @@ namespace scanner
         std::string filename;
 
     public:
-        explicit FastaScanner(std::string filename) : filename(std::move(filename))
+        explicit FastaScanner(const std::string filename) : filename(std::move(filename))
         {
         }
 
@@ -45,6 +47,7 @@ namespace scanner
 
                 while (std::getline(file, line))
                 {
+                    // TODO(Abdulrasheed1729): fix this to support multi-sequence files
                     if (line[0] == '>')
                     {
                         record.header = line.substr(1);
@@ -62,7 +65,6 @@ namespace scanner
 
                     }
                 }
-            }
 
             return record;
         }
