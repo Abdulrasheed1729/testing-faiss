@@ -18,10 +18,13 @@ TEST(FastqScannerTest, ValidFastqFile)
     FastqRecord record = scanner.next();
 
     ASSERT_EQ(record.header, "simulated.1/1");
-    ASSERT_EQ(record.sequence,
-              "ACGAGTTGCTGATCGAATTCCACACACACCCTCCTCCCATGCCTTCCCAATGGCTGCTGATAGTCTCTTTGGGGAATCAGCTTGAAATTTGTATTGCTCT");
+    ASSERT_EQ(
+      record.sequence,
+      "ACGAGTTGCTGATCGAATTCCACACACACCCTCCTCCCATGCCTTCCCAATGGCTGCTGATAGTCT"
+      "CTTTGGGGAATCAGCTTGAAATTTGTATTGCTCT");
     ASSERT_EQ(record.quality,
-              "IHIIIIHIIIGHHHGHIHHHIEIHIFIIIIHGIIDEIGIIHIIHGIIIFIHF=FI<HHHIGIF?GAIIIIBIEIIHEIIHIIFIIBBIIII;I3IIHIIF");
+              "IHIIIIHIIIGHHHGHIHHHIEIHIFIIIIHGIIDEIGIIHIIHGIIIFIHF=FI<HHHIGIF?"
+              "GAIIIIBIEIIHEIIHIIFIIBBIIII;I3IIHIIF");
 
     ASSERT_FALSE(scanner.hasNext());
 }
@@ -53,7 +56,8 @@ TEST(FastqScannerTest, EmptyFile)
 
 TEST(FastqScannerTest, FileNotFound)
 {
-    ASSERT_THROW(FastqScanner(DATA_DIR + "/nonexistent.fq"), std::runtime_error);
+    ASSERT_THROW(FastqScanner(DATA_DIR + "/nonexistent.fq"),
+                 std::runtime_error);
 }
 
 TEST(FastqScannerTest, HasNextIsIdempotent)
@@ -94,8 +98,7 @@ TEST(FastqScannerTest, LargeFile)
     FastqScanner scanner(DATA_DIR + "/left.fq");
 
     std::size_t count = 0;
-    while (scanner.hasNext())
-    {
+    while (scanner.hasNext()) {
         FastqRecord record = scanner.next();
         ASSERT_FALSE(record.header.empty());
         ASSERT_EQ(record.sequence.length(), record.quality.length());
@@ -105,7 +108,8 @@ TEST(FastqScannerTest, LargeFile)
     ASSERT_EQ(count, 25000u);
 }
 
-// ── FastaScanner tests ────────────────────────────────────────────────────────
+// ── FastaScanner tests
+// ────────────────────────────────────────────────────────
 
 TEST(FastaScannerTest, SingleRecord)
 {
@@ -175,10 +179,9 @@ TEST(FastaScannerTest, WhitespaceStrippedFromSequence)
     FastaScanner scanner(DATA_DIR + "/test_single.fa");
     FastaRecord record = scanner.next();
 
-    for (char c : record.sequence)
-    {
+    for (char c : record.sequence) {
         EXPECT_FALSE(std::isspace(static_cast<unsigned char>(c)))
-            << "Unexpected whitespace character: " << static_cast<int>(c);
+          << "Unexpected whitespace character: " << static_cast<int>(c);
     }
 }
 
@@ -192,9 +195,8 @@ TEST(FastaScannerTest, LargeFastaFile)
 
     // Dengue genome is ~10 700 bp; sequence must contain only ACGT.
     EXPECT_GT(record.sequence.size(), 10000u);
-    for (char c : record.sequence)
-    {
+    for (char c : record.sequence) {
         EXPECT_NE(std::string("ACGT").find(c), std::string::npos)
-            << "Unexpected base character: " << c;
+          << "Unexpected base character: " << c;
     }
 }

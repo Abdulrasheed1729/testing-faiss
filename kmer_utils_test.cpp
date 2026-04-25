@@ -1,19 +1,22 @@
 #include "kmer_utils.cpp"
-#include <gtest/gtest.h>
 #include <algorithm>
+#include <gtest/gtest.h>
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-static int true_count(const std::vector<uint8_t>& v)
+static int
+true_count(const std::vector<uint8_t>& v)
 {
     return static_cast<int>(
-        std::count_if(v.begin(), v.end(), [](uint8_t b) { return b != 0; }));
+      std::count_if(v.begin(), v.end(), [](uint8_t b) { return b != 0; }));
 }
 
-static int true_index(const std::vector<uint8_t>& v)
+static int
+true_index(const std::vector<uint8_t>& v)
 {
     for (int i = 0; i < static_cast<int>(v.size()); ++i)
-        if (v[i]) return i;
+        if (v[i])
+            return i;
     return -1;
 }
 
@@ -45,7 +48,8 @@ TEST(BaseToBitsTest, InvalidBasesReturnMinusOne)
     EXPECT_EQ(base_to_bits('\0'), -1);
 }
 
-// ── kmer_one_hot: vector size ─────────────────────────────────────────────────
+// ── kmer_one_hot: vector size
+// ─────────────────────────────────────────────────
 
 TEST(KmerOneHotTest, VectorSizeIsCorrectForDefaultK)
 {
@@ -56,15 +60,16 @@ TEST(KmerOneHotTest, VectorSizeIsCorrectForDefaultK)
 
 TEST(KmerOneHotTest, VectorSizeScalesWithK)
 {
-    EXPECT_EQ(kmer_one_hot<1>("A").size(),      1u << 2);
-    EXPECT_EQ(kmer_one_hot<2>("AA").size(),     1u << 4);
-    EXPECT_EQ(kmer_one_hot<3>("AAA").size(),    1u << 6);
-    EXPECT_EQ(kmer_one_hot<4>("AAAA").size(),   1u << 8);
-    EXPECT_EQ(kmer_one_hot<5>("AAAAA").size(),  1u << 10);
+    EXPECT_EQ(kmer_one_hot<1>("A").size(), 1u << 2);
+    EXPECT_EQ(kmer_one_hot<2>("AA").size(), 1u << 4);
+    EXPECT_EQ(kmer_one_hot<3>("AAA").size(), 1u << 6);
+    EXPECT_EQ(kmer_one_hot<4>("AAAA").size(), 1u << 8);
+    EXPECT_EQ(kmer_one_hot<5>("AAAAA").size(), 1u << 10);
     EXPECT_EQ(kmer_one_hot<6>("AAAAAA").size(), 1u << 12);
 }
 
-// ── kmer_one_hot: single bit set ──────────────────────────────────────────────
+// ── kmer_one_hot: single bit set
+// ──────────────────────────────────────────────
 
 TEST(KmerOneHotTest, ExactlyOneBitSetForValidKmer)
 {
@@ -94,8 +99,8 @@ TEST(KmerOneHotTest, K2KnownIndices)
     EXPECT_EQ(true_index(kmer_one_hot<2>("AA")), 0);
     EXPECT_EQ(true_index(kmer_one_hot<2>("AC")), 1);
     EXPECT_EQ(true_index(kmer_one_hot<2>("CA")), 4);
-    EXPECT_EQ(true_index(kmer_one_hot<2>("TG")), 11);  // T=2,G=3 → (2<<2)|3
-    EXPECT_EQ(true_index(kmer_one_hot<2>("TT")), 10);  // T=2,T=2 → (2<<2)|2
+    EXPECT_EQ(true_index(kmer_one_hot<2>("TG")), 11); // T=2,G=3 → (2<<2)|3
+    EXPECT_EQ(true_index(kmer_one_hot<2>("TT")), 10); // T=2,T=2 → (2<<2)|2
 }
 
 // ── kmer_one_hot: k=5 known indices ──────────────────────────────────────────
@@ -189,16 +194,17 @@ TEST(KmerOneHotTest, EmptyStringReturnsAllFalse)
 TEST(KmerOneHotTest, InvalidBaseThrows)
 {
     EXPECT_THROW(kmer_one_hot<5>("ACGNA"), std::invalid_argument);
-    EXPECT_THROW(kmer_one_hot<3>("NNN"),   std::invalid_argument);
+    EXPECT_THROW(kmer_one_hot<3>("NNN"), std::invalid_argument);
 }
 
-// ── pack_kmer_one_hot ─────────────────────────────────────────────────────────
+// ── pack_kmer_one_hot
+// ─────────────────────────────────────────────────────────
 
 TEST(PackKmerOneHotTest, OutputSizeIsInputDividedByEight)
 {
-    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(8,   0)).size(), 1u);
-    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(16,  0)).size(), 2u);
-    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(1024,0)).size(), 128u);
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(8, 0)).size(), 1u);
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(16, 0)).size(), 2u);
+    EXPECT_EQ(pack_kmer_one_hot(std::vector<uint8_t>(1024, 0)).size(), 128u);
 }
 
 TEST(PackKmerOneHotTest, EmptyInputProducesEmptyOutput)
@@ -251,14 +257,14 @@ TEST(PackKmerOneHotTest, NoBitsSet)
 TEST(PackKmerOneHotTest, AlternatingBits)
 {
     // [1,0,1,0,1,0,1,0] → 0b10101010 = 170
-    std::vector<uint8_t> v = {1,0,1,0,1,0,1,0};
+    std::vector<uint8_t> v = { 1, 0, 1, 0, 1, 0, 1, 0 };
     EXPECT_EQ(pack_kmer_one_hot(v)[0], 0b10101010u);
 }
 
 TEST(PackKmerOneHotTest, NonZeroValuesTreatedAsSet)
 {
     // values 5 and 255 are both non-zero → bits 0 and 1 set → 0b11000000 = 192
-    std::vector<uint8_t> v = {5, 255, 0, 0, 0, 0, 0, 0};
+    std::vector<uint8_t> v = { 5, 255, 0, 0, 0, 0, 0, 0 };
     EXPECT_EQ(pack_kmer_one_hot(v)[0], 0b11000000u);
 }
 
@@ -267,7 +273,7 @@ TEST(PackKmerOneHotTest, MultiByteKnownValues)
     // byte 0: [1,0,0,0,0,0,0,0] → 128
     // byte 1: [0,0,0,0,0,0,0,1] → 1
     std::vector<uint8_t> v(16, 0);
-    v[0]  = 1;
+    v[0] = 1;
     v[15] = 1;
     auto packed = pack_kmer_one_hot(v);
     ASSERT_EQ(packed.size(), 2u);
@@ -279,7 +285,7 @@ TEST(PackKmerOneHotTest, IntegrationWithKmerOneHot_AAAAA)
 {
     // kmer_one_hot<5>("AAAAA") sets only index 0
     // → byte 0 has bit 0 (MSB) set = 128, all other bytes = 0
-    auto vec    = kmer_one_hot<5>("AAAAA");
+    auto vec = kmer_one_hot<5>("AAAAA");
     auto packed = pack_kmer_one_hot(vec);
     ASSERT_EQ(packed.size(), 128u);
     EXPECT_EQ(packed[0], 128u);
@@ -291,7 +297,7 @@ TEST(PackKmerOneHotTest, IntegrationWithKmerOneHot_GGGGG)
 {
     // kmer_one_hot<5>("GGGGG") sets only index 1023
     // byte_idx = 1023/8 = 127, bit pos = 7 → shift 0 → packed[127] = 1
-    auto vec    = kmer_one_hot<5>("GGGGG");
+    auto vec = kmer_one_hot<5>("GGGGG");
     auto packed = pack_kmer_one_hot(vec);
     ASSERT_EQ(packed.size(), 128u);
     for (size_t i = 0; i < 127; ++i)

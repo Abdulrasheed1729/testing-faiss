@@ -5,20 +5,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-
 #include <iterator>
 #include <sstream>
 
-#include "scanner.cpp"
 #include "faiss_utils.cpp"
+#include "scanner.cpp"
 
 // #include <faiss/IndexFlat.h>
 // #include <faiss/IndexIVFPQ.h>
 // #include <faiss/index_io.h>
 #include <vector>
 
-template <typename T>
-std::string vec_to_string(const std::vector<T>& vec)
+template<typename T>
+std::string
+vec_to_string(const std::vector<T>& vec)
 {
     std::ostringstream oss;
     std::copy(vec.begin(), vec.end(), std::ostream_iterator<T>(oss, ", "));
@@ -33,16 +33,18 @@ std::string vec_to_string(const std::vector<T>& vec)
 //     return tv.tv_sec + tv.tv_usec * 1e-6;
 // }
 
-int main()
+int
+main()
 {
     scanner::FastaScanner fasta_scanner("data/dengue_ref_sequences.fasta");
     scanner::FastaRecord record = fasta_scanner.next();
     std::cout << "Header: " << record.header << std::endl;
     std::cout << "Sequence: " << record.sequence << std::endl;
-    auto [vectors, windows] = process_fasta_file("data/dengue_ref_sequences.fasta");
+    auto [vectors, windows] =
+      process_fasta_file("data/dengue_ref_sequences.fasta");
     std::ofstream outfile("data/dengue_ref_sequences.kmer.bin");
     std::vector<uint8_t> packed_vectors;
-    auto nb  = vectors.size();
+    auto nb = vectors.size();
     auto d_bits = kmer_vector_size<5>();
 
     auto d_bytes = d_bits >> 3;
@@ -54,8 +56,12 @@ int main()
         std::memcpy(current_ptr, dd.data(), dd.size());
     }
 
-    auto db = create_faiss_database(packed_vectors.data(), "data/dengue_ref_sequences.kmer.index", vectors.size(), d_bits ,128 , 8);
-
+    auto db = create_faiss_database(packed_vectors.data(),
+                                    "data/dengue_ref_sequences.kmer.index",
+                                    vectors.size(),
+                                    d_bits,
+                                    128,
+                                    8);
 
     // scanner::FastqScanner fqscanner("data/left.fq");
     // std::ofstream outfile("data/left.kmer.bin", std::ios::binary);
@@ -73,8 +79,9 @@ int main()
     //     std::cout << sizeof(kmer_vec[0]) << std::endl;
     //     std::cout << kmer_vec[0] << std::endl;
     //     std::cout << "Size of bool: " << sizeof(true) << std::endl;
-    //     std::cout << typeid(kmer_vec[0]).name() << ", size=" << sizeof(kmer_vec[0]) << "\n";
-    //     std::cout << typeid(true).name() << ", size=" << sizeof(true) << "\n";
+    //     std::cout << typeid(kmer_vec[0]).name() << ", size=" <<
+    //     sizeof(kmer_vec[0]) << "\n"; std::cout << typeid(true).name() << ",
+    //     size=" << sizeof(true) << "\n";
     //     // std::cout << record.quality << std::endl;
     // }
 }
