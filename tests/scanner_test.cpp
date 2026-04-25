@@ -1,5 +1,6 @@
-#include "scanner.cpp"
 #include <gtest/gtest.h>
+
+#include "../include/scanner.hpp"
 
 #ifndef TEST_DATA_DIR
 #define TEST_DATA_DIR "data"

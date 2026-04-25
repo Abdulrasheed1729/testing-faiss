@@ -6,3 +6,4 @@ build/
 *_test_discovery_*
 CTestTestfile.cmake
 *.index
+todo.md

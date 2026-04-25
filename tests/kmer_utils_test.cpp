@@ -1,6 +1,7 @@
-#include "kmer_utils.cpp"
 #include <algorithm>
 #include <gtest/gtest.h>
+
+#include "../include/kmer_utils.hpp"
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -212,20 +213,25 @@ TEST(PackKmerOneHotTest, EmptyInputProducesEmptyOutput)
     EXPECT_TRUE(pack_kmer_one_hot({}).empty());
 }
 
-TEST(PackKmerOneHotTest, InputSmallerThanEightProducesEmptyOutput)
+TEST(PackKmerOneHotTest, InputSmallerThanEightProducesOneByte)
 {
-    // 7 bits → 7>>3 = 0 bytes
-    EXPECT_TRUE(pack_kmer_one_hot(std::vector<uint8_t>(7, 1)).empty());
+    // 7 bits → ceiling((7)/8) = 1 byte; missing 8th bit is treated as 0
+    // bits 0-6 all set → 0b11111110 = 254
+    auto packed = pack_kmer_one_hot(std::vector<uint8_t>(7, 1));
+    ASSERT_EQ(packed.size(), 1u);
+    EXPECT_EQ(packed[0], 0b11111110u);
 }
 
-TEST(PackKmerOneHotTest, TrailingBitsIgnored)
+TEST(PackKmerOneHotTest, TrailingBitsPackedIntoPartialByte)
 {
-    // 9 elements → only first 8 packed, 9th dropped
+    // 9 elements → ceiling(9/8) = 2 bytes; the 9th bit goes into byte 1
+    // byte 0: all 0 → 0; byte 1: bit 8 is the MSB → 0b10000000 = 128
     std::vector<uint8_t> v(9, 0);
-    v[8] = 1; // only the trailing bit is set
+    v[8] = 1;
     auto packed = pack_kmer_one_hot(v);
-    ASSERT_EQ(packed.size(), 1u);
-    EXPECT_EQ(packed[0], 0u); // trailing bit was not packed
+    ASSERT_EQ(packed.size(), 2u);
+    EXPECT_EQ(packed[0], 0u);
+    EXPECT_EQ(packed[1], 0b10000000u);
 }
 
 TEST(PackKmerOneHotTest, MSBFirst_FirstBitSet)

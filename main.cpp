@@ -5,16 +5,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
 #include <iterator>
 #include <sstream>
+#include <vector>
 
-#include "faiss_utils.cpp"
-#include "scanner.cpp"
+#include "include/faiss_utils.hpp"
+#include "include/kmer_utils.hpp"
+#include "include/scanner.hpp"
 
 // #include <faiss/IndexFlat.h>
 // #include <faiss/IndexIVFPQ.h>
 // #include <faiss/index_io.h>
-#include <vector>
 
 template<typename T>
 std::string

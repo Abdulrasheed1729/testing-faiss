@@ -1,4 +1,7 @@
-#pragma once
+#include <cstdint>
+#include <iostream>
+#include <string>
+#include <vector>
 
 #include <faiss/IndexBinaryFlat.h>
 #include <faiss/IndexBinaryIVF.h>
@@ -6,28 +9,14 @@
 #include <faiss/MetricType.h>
 #include <faiss/index_io.h>
 
-#include <cstdint>
-#include <string>
-#include <vector>
-
-#include "kmer_utils.cpp"
-#include "scanner.cpp"
-
-using KmerVector = std::vector<uint8_t>;
-
-struct WindowMeta
-{
-    std::string sequence_name;
-    int start_pos = 0;
-    // TODO(Abdulrasheed1729): add support for the reverse complement strand
-    // char strand = '+'; // '+' for forward, '-' for reverse complement (unused
-    // in canonical mode)
-};
+#include "../include/faiss_utils.hpp"
+#include "../include/kmer_utils.hpp"
+#include "../include/scanner.hpp"
 
 std::tuple<std::vector<KmerVector>, std::vector<WindowMeta>>
 process_fasta_file(const std::string fasta_path,
-                   size_t window_size = 50,
-                   size_t stride = 1)
+                   size_t window_size,
+                   size_t stride)
 {
     // load fasta file and return a string of sequence
 
