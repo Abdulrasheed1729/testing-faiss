@@ -20,12 +20,21 @@ class FastaScanner
 {
 
   public:
-    explicit FastaScanner(const std::string filename)
-      : filename(std::move(filename)) {};
-    [[nodiscard]] FastaRecord next() const;
+    explicit FastaScanner(const std::string& filename)
+      : filename(filename)
+      , file(filename)
+    {
+        if (!file.is_open()) {
+            throw std::runtime_error("Failed to open file " + filename);
+        }
+    };
+    FastaRecord next();
+
+    ~FastaScanner() { file.close(); };
 
   private:
     std::string filename;
+    std::ifstream file;
 };
 
 class FastqScanner
@@ -33,11 +42,12 @@ class FastqScanner
   public:
     explicit FastqScanner(const std::string& filename)
       : filename(filename)
-      , file(filename) {
-		if (!file.is_open()) {
-			throw std::runtime_error("Failed to open file");
-		}
-	};
+      , file(filename)
+    {
+        if (!file.is_open()) {
+            throw std::runtime_error("Failed to open file " + filename);
+        }
+    };
     ~FastqScanner() { file.close(); };
     bool hasNext();
     FastqRecord next();

@@ -6,15 +6,10 @@
 
 namespace scanner {
 
-[[nodiscard]] FastaRecord
-FastaScanner::next() const
+FastaRecord
+FastaScanner::next()
 {
-    std::ifstream file(filename);
     FastaRecord record;
-
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file");
-    }
 
     std::string line;
     std::string sequence;

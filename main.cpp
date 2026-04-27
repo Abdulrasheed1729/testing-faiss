@@ -68,27 +68,29 @@ main()
                                     128,
                                     8);
 
-    // scanner::FastqScanner fqscanner("data/left.fq");
-    // std::ofstream outfile("data/left.kmer.bin", std::ios::binary);
+    {
+        // scanner::FastqScanner fqscanner("data/left.fq");
+        // std::ofstream outfile("data/left.kmer.bin", std::ios::binary);
 
-    // while (fqscanner.hasNext())
-    // {
-    //     scanner::FastqRecord record = fqscanner.next();
-    //     std::vector<bool> kmer_vec = kmer_one_hot(record.sequence);
-    //     std::string kmer_str = vec_to_string(kmer_vec);
-    //     std::cout << kmer_str << std::endl;
-    //     outfile.write(kmer_str.c_str(), kmer_str.size());
-    //     outfile.write("\n", 1);
-    //     // std::cout << record.header << std::endl;
-    //     std::cout << record.sequence << std::endl;
-    //     std::cout << sizeof(kmer_vec[0]) << std::endl;
-    //     std::cout << kmer_vec[0] << std::endl;
-    //     std::cout << "Size of bool: " << sizeof(true) << std::endl;
-    //     std::cout << typeid(kmer_vec[0]).name() << ", size=" <<
-    //     sizeof(kmer_vec[0]) << "\n"; std::cout << typeid(true).name() << ",
-    //     size=" << sizeof(true) << "\n";
-    //     // std::cout << record.quality << std::endl;
-    // }
+        // while (fqscanner.hasNext())
+        // {
+        //     scanner::FastqRecord record = fqscanner.next();
+        //     std::vector<bool> kmer_vec = kmer_one_hot(record.sequence);
+        //     std::string kmer_str = vec_to_string(kmer_vec);
+        //     std::cout << kmer_str << std::endl;
+        //     outfile.write(kmer_str.c_str(), kmer_str.size());
+        //     outfile.write("\n", 1);
+        //     // std::cout << record.header << std::endl;
+        //     std::cout << record.sequence << std::endl;
+        //     std::cout << sizeof(kmer_vec[0]) << std::endl;
+        //     std::cout << kmer_vec[0] << std::endl;
+        //     std::cout << "Size of bool: " << sizeof(true) << std::endl;
+        //     std::cout << typeid(kmer_vec[0]).name() << ", size=" <<
+        //     sizeof(kmer_vec[0]) << "\n"; std::cout << typeid(true).name() <<
+        //     ", size=" << sizeof(true) << "\n";
+        //     // std::cout << record.quality << std::endl;
+        // }
+    }
 }
 
 // int main() {
