@@ -6,28 +6,58 @@
 
 namespace scanner {
 
+bool
+FastaScanner::hasNext() const
+{
+    return has_pending_header || !reached_eof;
+}
+
 FastaRecord
 FastaScanner::next()
 {
     FastaRecord record;
-
     std::string line;
-    std::string sequence;
 
-    while (std::getline(file, line)) {
-        // TODO: (Abdulrasheed1729) fix this to support multi-sequence files
-        if (line[0] == '>') {
-            record.header = line.substr(1);
-        } else {
-            for (char c : line) {
-                if (!std::isspace(static_cast<unsigned char>(c))) {
-                    sequence.push_back(c);
-                }
+    if (has_pending_header) {
+        record.header = pending_header;
+        has_pending_header = false;
+    } else {
+        while (std::getline(file, line)) {
+            if (line.empty())
+                continue;
+
+            if (line[0] == '>') {
+                record.header = line.substr(1);
+                break;
             }
-            record.sequence = sequence;
+
+            throw std::runtime_error("Invalid FASTA: sequence before header");
         }
     }
 
+    if (record.header.empty()) {
+        reached_eof = true;
+        return record;
+    }
+
+    while (std::getline(file, line)) {
+        if (line.empty())
+            continue;
+
+        if (line[0] == '>') {
+            pending_header = line.substr(1);
+            has_pending_header = true;
+            return record;
+        }
+
+        for (char c : line) {
+            if (!std::isspace(static_cast<unsigned char>(c))) {
+                record.sequence.push_back(c);
+            }
+        }
+    }
+
+    reached_eof = true;
     return record;
 }
 
