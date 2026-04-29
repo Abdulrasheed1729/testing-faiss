@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -112,6 +113,16 @@ build_index(const std::string& index_path,
     return true;
 }
 
+template<typename T>
+std::string
+vec_to_string(const std::vector<T>& vec)
+{
+    std::ostringstream oss;
+    std::copy(vec.begin(), vec.end(), std::ostream_iterator<T>(oss, ", "));
+
+    return oss.str();
+}
+
 void
 query_index(const std::string& index_path,
             const scanner::FastqRecord& query_sequence,
@@ -130,10 +141,21 @@ query_index(const std::string& index_path,
     std::string line;
     while (std::getline(meta_file, line)) {
         size_t idx;
+        std::string idx_str;
+        std::string start_pos_str;
+        std::string seq_name;
         WindowMetaData meta;
         std::istringstream iss(line);
-        iss >> idx >> meta.sequence_name >> meta.start_pos;
+        std::getline(iss, idx_str, '\t');
+        std::getline(iss, seq_name, '\t');
+        std::getline(iss, start_pos_str, '\t');
+        idx = std::stoul(idx_str.c_str());
+        meta.start_pos = std::stoi(start_pos_str);
+        meta.sequence_name = seq_name;
+        // iss >> idx >> meta.sequence_name >> meta.start_pos;
         meta_map[idx] = meta;
+        // std::cout << meta.start_pos << "\n";
+        // std::cout << meta.sequence_name << "\n";
     }
 
     KmerVector query_vec = kmer_one_hot<KMER_K>(query_sequence.sequence);
@@ -150,6 +172,6 @@ query_index(const std::string& index_path,
         auto meta = meta_map[indices[i]];
         std::cout << meta.sequence_name << ":" << meta.start_pos
                   << " (distance: " << distances[i] << ") "
-		  << query_sequence.header << "\n";
+                  << query_sequence.header << "\n";
     }
 }
