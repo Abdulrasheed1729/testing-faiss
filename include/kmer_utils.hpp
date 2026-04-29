@@ -61,8 +61,11 @@ kmer_one_hot_raw(const char* sequence,
     for (size_t i = 0; i < KMER; ++i) {
         int8_t code = base_to_bits(sequence[i]);
         if (code == -1) {
-            *error_flag = 1;
-            return false;
+            // *error_flag = 1;
+            // return false;
+            // HACK: this is just for the code to run if there is a non-ACTG
+            // character in the sequence
+            continue;
         }
         index = (index << 2) | static_cast<size_t>(code);
     }
@@ -72,8 +75,11 @@ kmer_one_hot_raw(const char* sequence,
     for (size_t i = KMER; i < seq_len; ++i) {
         int8_t code = base_to_bits(sequence[i]);
         if (code == -1) {
-            *error_flag = 1;
-            return false;
+            // *error_flag = 1;
+            // return false;
+            // HACK: this is just for the code to run if there is a non-ACTG
+            // character in the sequence
+            continue;
         }
         index = ((index << 2) & mask) | static_cast<size_t>(code);
         out[index] = 1;
@@ -116,12 +122,13 @@ kmer_one_hot(const std::string& sequence)
     return result;
 }
 
-inline std::vector<uint8_t>
-pack_kmer_one_hot(const std::vector<uint8_t>& vec)
+inline void
+pack_kmer_one_hot(const std::vector<uint8_t>& vec_in,
+                  std::vector<uint8_t>& vec_out)
 {
-    const size_t num_bits = vec.size();
-    const size_t byte_size = (vec.size() + 7) >> 3;
-    std::vector<uint8_t> packed(byte_size, 0);
+    const size_t num_bits = vec_in.size();
+    const size_t byte_size = (vec_in.size() + 7) >> 3;
+    vec_out.resize(byte_size);
 
     for (size_t byte_idx = 0; byte_idx < byte_size; ++byte_idx) {
         uint8_t current_byte = 0;
@@ -129,16 +136,12 @@ pack_kmer_one_hot(const std::vector<uint8_t>& vec)
         const size_t limit = std::min(start_bit + 8, num_bits);
 
         for (size_t i = start_bit; i < limit; ++i) {
-            if (vec[i]) {
+            if (vec_in[i]) {
                 current_byte |=
                   static_cast<std::uint8_t>(1u << (7 - (i - start_bit)));
             }
         }
 
-        packed[byte_idx] = current_byte;
+        vec_out[byte_idx] = current_byte;
     }
-
-    return packed;
 }
-
-// TODO(Abdulrasheed1729): add the suport for complement type

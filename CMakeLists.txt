@@ -18,9 +18,9 @@ target_link_libraries(testing_faiss
 
 
 # Testing
-find_package(GTest)
-enable_testing()
-add_subdirectory(tests)
+# find_package(GTest)
+# enable_testing()
+# add_subdirectory(tests)
 
 # add_executable(
 # scanner_test

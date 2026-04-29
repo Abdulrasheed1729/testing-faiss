@@ -1,52 +1,32 @@
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
-#include <iterator>
-#include <sstream>
-#include <vector>
 
 #include "include/faiss_utils.hpp"
 #include "include/kmer_utils.hpp"
-#include "include/scanner.hpp"
-
-template<typename T>
-std::string
-vec_to_string(const std::vector<T>& vec)
-{
-    std::ostringstream oss;
-    std::copy(vec.begin(), vec.end(), std::ostream_iterator<T>(oss, ", "));
-
-    return oss.str();
-}
+// #include "include/scanner.hpp"
 
 int
 main()
 {
-    scanner::FastaScanner fasta_scanner("data/dengue_ref_sequences.fasta");
-    scanner::FastaRecord record = fasta_scanner.next();
-    std::cout << "Header: " << record.header << std::endl;
-    std::cout << "Sequence: " << record.sequence << std::endl;
-    auto [vectors, windows] =
-      process_fasta_file("data/dengue_ref_sequences.fasta");
-    std::ofstream outfile("data/dengue_ref_sequences.kmer.bin");
-    std::vector<uint8_t> packed_vectors;
-    auto nb = vectors.size();
-    auto d_bits = kmer_vector_size<5>();
-
-    auto d_bytes = d_bits >> 3;
-    packed_vectors.resize(nb * d_bytes);
-
-    for (size_t i = 0; i < vectors.size(); ++i) {
-        auto current_ptr = packed_vectors.data() + i * d_bytes;
-        auto dd = pack_kmer_one_hot(vectors[i]);
-        std::memcpy(current_ptr, dd.data(), dd.size());
+    const std::string data_path = "data/dengue_ref_sequences.fasta";
+    const std::string index_path = "data/dengue_ref_sequences.index";
+    const std::string dengue_left_seq = "data/left.fq";
+    
+    auto is_index_built = build_index(index_path, data_path, 128, 10);
+    
+    if (!is_index_built) {
+        std::cerr << "Error building reference database index :( \n";
     }
-
-    auto db = create_faiss_database(packed_vectors.data(),
-                                    "data/dengue_ref_sequences.kmer.index",
-                                    vectors.size(),
-                                    d_bits,
-                                    128,
-                                    8);
+    
+    scanner::FastqScanner dengue_left_scanner =
+        scanner::FastqScanner(dengue_left_seq);
+    size_t nq = 1;
+    int k = 10;
+    auto d = kmer_vector_size<5>();
+    
+    while (dengue_left_scanner.hasNext()) {
+        auto record = dengue_left_scanner.next();
+        query_index(index_path, record, nq, k, d);
+    }
+    
+    return 0;
 }
