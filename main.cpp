@@ -25,8 +25,15 @@ main()
 
     // while (dengue_left_scanner.hasNext()) {
     auto record = dengue_left_scanner.next();
-    record = dengue_left_scanner.next();
+
+    // auto t_start = std::chrono::steady_clock::now();
     query_index(index_path, record, nq, k, d);
+    // auto t_end = std::chrono::steady_clock::now();
+
+    // double elapsed =
+    // std::chrono::duration<double, std::milli>(t_end - t_start).count();
+
+    // std::cout << "Query time: " << elapsed << "ms.\n";
     // }
 
     return 0;

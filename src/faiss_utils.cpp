@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -162,12 +163,20 @@ query_index(const std::string& index_path,
     std::vector<uint8_t> packed_query(nq * d / 8);
     pack_kmer_one_hot(query_vec, packed_query);
 
+    std::cout << "Total Index: " << loaded_index->ntotal << "\n";
+    std::cout << "Total d: " << loaded_index->d << "\n";
+
     std::vector<faiss::idx_t> indices(nq * k);
     std::vector<int32_t> distances(nq * k);
     // loaded_index->nprobe = nprobe; // set nprobe
+    auto t_start = std::chrono::steady_clock::now();
     loaded_index->search(
       nq, packed_query.data(), k, distances.data(), indices.data());
 
+    auto t_end = std::chrono::steady_clock::now();
+    double elapsed =
+      std::chrono::duration<double, std::milli>(t_end - t_start).count();
+    std::cout << "Query time: " << elapsed << "ms.\n";
     for (int i = 0; i < k; ++i) {
         auto meta = meta_map[indices[i]];
         std::cout << meta.sequence_name << ":" << meta.start_pos

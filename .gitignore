@@ -7,3 +7,7 @@ build/
 CTestTestfile.cmake
 *.index
 todo.md
+notes.md
+*.pdf
+codebase_overview.md
+overview.typ
