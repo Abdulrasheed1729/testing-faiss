@@ -1,11 +1,21 @@
 [
   {
-    "label": "Debug Testing FAISS Main Executable",
+    "label": "Debug Testing FAISS Main Executable (windows)",
     "build": {
       "command": "cmake --build build",
       "cwd": "$ZED_WORKTREE_ROOT",
     },
-    "program": "${ZED_WORKTREE_ROOT}/build/testing_faiss",
+    "program": "${ZED_WORKTREE_ROOT}/build/windows/Debug/testing_faiss",
+    "request": "launch",
+    "adapter": "CodeLLDB",
+  },
+  {
+    "label": "Debug Testing FAISS Main Executable (linux)",
+    "build": {
+      "command": "cmake --build build/linux",
+      "cwd": "$ZED_WORKTREE_ROOT",
+    },
+    "program": "${ZED_WORKTREE_ROOT}/build/linux/testing_faiss",
     "request": "launch",
     "adapter": "CodeLLDB",
   },
