@@ -2,9 +2,12 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <faiss/MetricType.h>
 #include <string>
 #include <tuple>
 #include <vector>
+
+#include <faiss/IndexBinary.h>
 
 #include "scanner.hpp"
 
@@ -39,19 +42,28 @@ process_fasta_file(const std::string fasta_path,
                    size_t stride = 1);
 
 bool
-build_index(const std::string& index_path,
-            const std::string& data_path,
-            // size_t d,
-            size_t nlist,
-            size_t nprobe);
+build_flat_index(const std::string& index_path, const std::string& data_path);
+
+bool
+build_ivf_index(const std::string& index_path,
+                const std::string& data_path,
+                // size_t d,
+                size_t nlist,
+                size_t nprobe);
 
 std::vector<KmerVector>
 load_index(const std::string& index_path);
 
-void
+std::vector<faiss::idx_t>
 query_index(const std::string& index_path,
             const scanner::FastqRecord& query_sequence,
             size_t nq,
             int k,
-            size_t d);
-// size_t nprobe);
+            size_t d,
+            bool is_flat);
+
+void
+compare_flat_to_ivf_index(std::vector<faiss::idx_t> ivf_indices,
+                          std::vector<faiss::idx_t> flat_indices,
+                          size_t nq,
+                          int k);

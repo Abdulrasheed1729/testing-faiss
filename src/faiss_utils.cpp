@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -55,10 +56,10 @@ process_fasta_file(const std::string fasta_path,
 }
 
 bool
-build_index(const std::string& index_path,
-            const std::string& data_path, // size_t d,
-            size_t nlist,
-            size_t nprobe)
+build_ivf_index(const std::string& index_path,
+                const std::string& data_path, // size_t d,
+                size_t nlist,
+                size_t nprobe)
 {
 
     // assert(d % 8 == 0); // d must be greater than 0
@@ -91,6 +92,8 @@ build_index(const std::string& index_path,
         std::memcpy(current_ptr, packed_buffer.data(), packed_buffer.size());
     }
 
+    index.nprobe = nprobe;
+
     if (!index.is_trained && nb > nlist) {
         std::cout << "Training the Binary IVF index ...\n";
         index.train(static_cast<faiss::idx_t>(nb), packed_vectors.data());
@@ -103,13 +106,62 @@ build_index(const std::string& index_path,
 
     std::cout << "Saving metadata ...\n";
 
-    std::ofstream meta_file(index_path + ".meta.tsv");
+    std::ofstream meta_file(index_path + ".meta.ivf.tsv");
     for (size_t i = 0; i < windows.size(); ++i) {
         meta_file << i << "\t" << windows[i].sequence_name << "\t"
                   << windows[i].start_pos << "\n";
     }
 
-    std::cout << "Metadata saved to " << index_path << ".meta.tsv\n";
+    std::cout << "Metadata saved to " << index_path << ".meta.ivf.tsv\n";
+
+    return true;
+}
+
+bool
+build_flat_index(const std::string& index_path, const std::string& data_path)
+{
+
+    // assert(d % 8 == 0); // d must be greater than 0
+
+    auto d_bits = kmer_vector_size<5>(); // d
+
+    auto [vectors, windows] = process_fasta_file(data_path);
+
+    assert(!vectors.empty());
+
+    faiss::IndexBinaryFlat index(static_cast<faiss::idx_t>(d_bits));
+
+    std::vector<uint8_t> packed_vectors;
+    std::vector<uint8_t> packed_buffer;
+    auto nb = vectors.size();
+
+    if (nb <= 0)
+        return false;
+
+    auto d_bytes = d_bits >> 3;
+    packed_vectors.resize(nb * d_bytes);
+
+    for (size_t i = 0; i < vectors.size(); ++i) {
+        auto current_ptr = packed_vectors.data() + i * d_bytes;
+        pack_kmer_one_hot(vectors[i], packed_buffer);
+        std::memcpy(current_ptr, packed_buffer.data(), packed_buffer.size());
+    }
+    std::cout << "Building Binary Flat Index...\n";
+
+    index.add(static_cast<faiss::idx_t>(nb), packed_vectors.data());
+    faiss::write_index_binary(&index, index_path.c_str());
+
+    std::cout << "Index saved to " << index_path << "\n";
+
+    std::cout << "Saving metadata ...\n";
+
+    std::ofstream meta_file(index_path + ".meta.flat.tsv");
+    for (size_t i = 0; i < windows.size(); ++i) {
+        meta_file << i << "\t" << windows[i].sequence_name << "\t"
+                  << windows[i].start_pos << "\n";
+    }
+
+    std::cout << "Metadata saved to " << index_path << ".meta.flat.tsv\n";
 
     return true;
 }
@@ -124,12 +176,13 @@ vec_to_string(const std::vector<T>& vec)
     return oss.str();
 }
 
-void
+std::vector<faiss::idx_t>
 query_index(const std::string& index_path,
             const scanner::FastqRecord& query_sequence,
             size_t nq,
             int k,
-            size_t d)
+            size_t d,
+            bool is_flat = false)
 // size_t nprobe)
 {
     // load index
@@ -138,7 +191,13 @@ query_index(const std::string& index_path,
 
     // load metadata
     std::unordered_map<size_t, WindowMetaData> meta_map;
-    std::ifstream meta_file(index_path + ".meta.tsv");
+    std::string idx_path;
+    if (is_flat) {
+        idx_path = index_path + ".meta.flat.tsv";
+    } else {
+        idx_path = index_path + ".meta.ivf.tsv";
+    }
+    std::ifstream meta_file(idx_path);
     std::string line;
     while (std::getline(meta_file, line)) {
         size_t idx;
@@ -160,7 +219,7 @@ query_index(const std::string& index_path,
     }
 
     KmerVector query_vec = kmer_one_hot<KMER_K>(query_sequence.sequence);
-    std::vector<uint8_t> packed_query(nq * d / 8);
+    std::vector<uint8_t> packed_query(nq * (d / 8));
     pack_kmer_one_hot(query_vec, packed_query);
 
     std::cout << "Total Index: " << loaded_index->ntotal << "\n";
@@ -183,4 +242,32 @@ query_index(const std::string& index_path,
                   << " (distance: " << distances[i] << ") "
                   << query_sequence.header << "\n";
     }
+
+    return indices;
+}
+
+void
+compare_flat_to_ivf_index(std::vector<faiss::idx_t> ivf_indices,
+                          std::vector<faiss::idx_t> flat_indices,
+                          size_t nq,
+                          int k)
+{
+    int correct = 0;
+
+    for (int i = 0; i < nq; i++) {
+        std::set<faiss::idx_t> gt;
+
+        for (int j = 0; j < k; j++) {
+            gt.insert(flat_indices[i * k + j]);
+        }
+
+        for (int j = 0; j < k; j++) {
+            if (gt.count(ivf_indices[i * k + j])) {
+                correct++;
+            }
+        }
+    }
+
+    float recall = float(correct) / (nq * k);
+    std::cout << "Recall@" << k << " = " << recall << std::endl;
 }

@@ -2,18 +2,25 @@
 
 #include "include/faiss_utils.hpp"
 #include "include/kmer_utils.hpp"
-// #include "include/scanner.hpp"
 
 int
 main()
 {
     const std::string data_path = "data/dengue_ref_sequences.fasta";
-    const std::string index_path = "data/dengue_ref_sequences.index";
+    const std::string ivf_index_path = "data/dengue_ref_sequences.ivf.index";
+    const std::string flat_index_path = "data/dengue_ref_sequences.flat.index";
     const std::string dengue_left_seq = "data/left.fq";
 
-    auto is_index_built = build_index(index_path, data_path, 128, 10);
+    auto is_ivf_index_built =
+      build_ivf_index(ivf_index_path, data_path, 256, 32);
 
-    if (!is_index_built) {
+    auto is_flat_index_built = build_flat_index(flat_index_path, data_path);
+
+    if (!is_ivf_index_built) {
+        std::cerr << "Error building reference database index :( \n";
+    }
+
+    if (!is_flat_index_built) {
         std::cerr << "Error building reference database index :( \n";
     }
 
@@ -23,18 +30,13 @@ main()
     int k = 10;
     auto d = kmer_vector_size<5>();
 
-    // while (dengue_left_scanner.hasNext()) {
     auto record = dengue_left_scanner.next();
 
-    // auto t_start = std::chrono::steady_clock::now();
-    query_index(index_path, record, nq, k, d);
-    // auto t_end = std::chrono::steady_clock::now();
+    auto ivf_indices = query_index(ivf_index_path, record, nq, k, d, false);
 
-    // double elapsed =
-    // std::chrono::duration<double, std::milli>(t_end - t_start).count();
+    auto flat_indices = query_index(flat_index_path, record, nq, k, d, true);
 
-    // std::cout << "Query time: " << elapsed << "ms.\n";
-    // }
+    compare_flat_to_ivf_index(ivf_indices, flat_indices, nq, k);
 
     return 0;
 }
